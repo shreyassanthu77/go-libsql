@@ -1,0 +1,5 @@
+package libsql
+
+import (
+	"C"
+)
