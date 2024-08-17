@@ -138,6 +138,24 @@ func NewEmbeddedReplicaConnector(dbPath string, primaryUrl string, opts ...Optio
 	return openEmbeddedReplicaConnector(dbPath, primaryUrl, authToken, readYourWrites, encryptionKey, syncInterval)
 }
 
+func NewConnector(dbPath string, opts ...Option) (*Connector, error) {
+	var config config
+	errs := make([]error, 0, len(opts))
+	for _, opt := range opts {
+		if err := opt.apply(&config); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+	authToken := ""
+	if config.authToken != nil {
+		authToken = *config.authToken
+	}
+	return openRemoteConnector(dbPath, authToken)
+}
+
 type driver struct{}
 
 func (d driver) Open(dbAddress string) (sqldriver.Conn, error) {
